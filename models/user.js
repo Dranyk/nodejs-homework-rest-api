@@ -5,6 +5,9 @@ const { handleMongooseError } = require("../utils");
 // eslint-disable-next-line no-useless-escape
 const emailRegexp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
+
+const subscriptionType = ["starter", "pro", "business"];
+
 const userSchema = new Schema(
   {
     password: {
@@ -19,14 +22,10 @@ const userSchema = new Schema(
     },
     subscription: {
       type: String,
-      enum: ["starter", "pro", "business"],
+      enum: subscriptionType,
       default: "starter",
     },
     token: String,
-    owner: {
-      type: Schema.Types.ObjectId,
-      ref: "user",
-    },
   },
   { versionKey: false, timestamps: true }
 );
@@ -34,7 +33,6 @@ const userSchema = new Schema(
 userSchema.post("save", handleMongooseError);
 
 const registerSchema = Joi.object({
-  name: Joi.string().required(),
   email: Joi.string().pattern(emailRegexp).required(),
   password: Joi.string().min(6).required(),
 });
@@ -44,9 +42,17 @@ const loginSchema = Joi.object({
   password: Joi.string().min(6).required(),
 });
 
+const updateSubscriptionSchema = Joi.object({
+  subscription: Joi.string()
+    .valid(...subscriptionType)
+    .required()
+    .messages({ "any.only": `Invalid type of subscription` }),
+});
+
 const schemas = {
   registerSchema,
   loginSchema,
+  updateSubscriptionSchema,
 };
 
 const User = model("user", userSchema);
