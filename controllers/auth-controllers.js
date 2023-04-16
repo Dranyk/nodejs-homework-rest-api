@@ -6,7 +6,7 @@ const { ctrlWrapper } = require("../utils");
 const { User } = require("../models/user");
 
 const { HttpError } = require("../helpers");
-
+require("dotenv").config();
 const { SECRET_KEY } = process.env;
 
 const register = async (req, res) => {
