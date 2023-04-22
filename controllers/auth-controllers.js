@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
 const fs = require("fs/promises");
 const path = require("path");
+const Jimp = require("jimp");
 
 const { ctrlWrapper } = require("../utils");
 
@@ -14,6 +15,15 @@ require("dotenv").config();
 const { SECRET_KEY } = process.env;
 
 const avatarsDir = path.join(__dirname, "../", "public", "avatars");
+
+const resizeImg = async (img) => {
+  try {
+    const image = await Jimp.read(img);
+    image.resize(250, 250).write(img);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -89,6 +99,7 @@ const updateAvatar = async(req, res)=> {
   const {path: tempUpload, filename} = req.file;
   const avatarName = `${_id}_${filename}`;
   const resultUpload = path.join(avatarsDir, avatarName);
+  await resizeImg(tempUpload);
   await fs.rename(tempUpload, resultUpload);
   const avatarURL = path.join("avatars", avatarName);
   await User.findByIdAndUpdate(_id, {avatarURL});
